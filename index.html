@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MASH Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
+        .category { margin: 15px; }
+        input { margin: 5px; width: 200px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 5px; }
+        #result, #daydream { margin-top: 20px; font-size: 18px; }
+        #spiralCanvas { border: 1px solid black; margin: 10px auto; display: block; }
+    </style>
+</head>
+<body>
+    <h1>MASH: Predict Your Future!</h1>
+    
+    <div class="category"><h3>Housing (MASH + 1 random)</h3></div>
+    <div class="category">
+        <h3>Spouse</h3>
+        <input type="text" id="spouse1" placeholder="Option 1"><br>
+        <input type="text" id="spouse2" placeholder="Option 2"><br>
+        <input type="text" id="spouse3" placeholder="Option 3"><br>
+        <input type="text" id="spouse4" placeholder="Option 4">
+    </div>
+    <div class="category">
+        <h3>Job</h3>
+        <input type="text" id="job1" placeholder="Option 1"><br>
+        <input type="text" id="job2" placeholder="Option 2"><br>
+        <input type="text" id="job3" placeholder="Option 3"><br>
+        <input type="text" id="job4" placeholder="Option 4">
+    </div>
+    <div class="category">
+        <h3>Kids</h3>
+        <input type="text" id="kids1" placeholder="Option 1"><br>
+        <input type="text" id="kids2" placeholder="Option 2"><br>
+        <input type="text" id="kids3" placeholder="Option 3"><br>
+        <input type="text" id="kids4" placeholder="Option 4">
+    </div>
+    <div class="category">
+        <h3>Car</h3>
+        <input type="text" id="car1" placeholder="Option 1"><br>
+        <input type="text" id="car2" placeholder="Option 2"><br>
+        <input type="text" id="car3" placeholder="Option 3"><br>
+        <input type="text" id="car4" placeholder="Option 4">
+    </div>
+    
+    <h3>Draw Your Spiral Here!</h3>
+    <canvas id="spiralCanvas" width="400" height="400"></canvas>
+    
+    <button onclick="playMash()">Predict My Future!</button>
+    <button onclick="dayDream()">DayDream</button>
+    
+    <div id="result"></div>
+    <div id="daydream"></div>
+
+    <script>
+        let mashResult = {};
+        let drawing = false;
+        let points = [];
+        let spiralCount = 0;
+
+        // Canvas setup
+        const canvas = document.getElementById("spiralCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "blue";
+
+        // Mouse drawing events
+        canvas.addEventListener("mousedown", (e) => {
+            drawing = true;
+            points = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const rect = canvas.getBoundingClientRect();
+            points.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const newPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            points.push(newPoint);
+
+            ctx.beginPath();
+            ctx.moveTo(points[points.length - 2].x, points[points.length - 2].y);
+            ctx.lineTo(newPoint.x, newPoint.y);
+            ctx.stroke();
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+            spiralCount = countRings();
+            console.log("Spiral count:", spiralCount);
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            drawing = false;
+        });
+
+        function countRings() {
+            if (points.length < 10) return 3;
+            let intersections = 0;
+            const yCenter = canvas.height / 2;
+            for (let i = 1; i < points.length; i++) {
+                const p1 = points[i - 1];
+                const p2 = points[i];
+                if ((p1.y < yCenter && p2.y >= yCenter) || (p1.y >= yCenter && p2.y < yCenter)) {
+                    intersections++;
+                }
+            }
+            return Math.max(3, Math.floor(intersections / 2));
+        }
+
+        // Pop culture randomizers
+        function getRandomPopSpouse() {
+            const spouses = [
+                "Sabrina Carpenter", "Chappell Roan", "Kendrick Lamar", "Timothee Chalamet",
+                "Ariana Grande", "Travis Kelce", "Zendaya", "Harry Styles"
+            ];
+            return spouses[Math.floor(Math.random() * spouses.length)];
+        }
+
+        function getRandomPopJob() {
+            const jobs = [
+                "TikTok Star", "Grammy Winner", "Super Bowl Champ", "Wicked Witch",
+                "Dune Warrior", "Barbie Designer", "Rapper Feuder", "Influencer"
+            ];
+            return jobs[Math.floor(Math.random() * jobs.length)];
+        }
+
+        function getRandomPopKid() {
+            const kids = [
+                "North West", "Blue Ivy", "Stormi Webster", "RZA Wu-Tang",
+                "Baby Yoda", "Dune Buggy", "Espresso Shot", "Glinda Jr."
+            ];
+            return kids[Math.floor(Math.random() * kids.length)];
+        }
+
+        function getRandomPopCar() {
+            const cars = [
+                "Cybertruck", "Barbie Dream Car", "Dune Speeder", "Swiftie Tour Bus",
+                "Disco Ball Mobile", "Kendrick’s Diss Wagon", "Wicked Broomstick", "Chalamet’s Chalamo-bile"
+            ];
+            return cars[Math.floor(Math.random() * cars.length)];
+        }
+
+        function getRandomWord() {
+            const words = ["Pineapple", "Disco", "Wizard", "Noodle", "Goblin", "Cloud", "Tractor", "Velvet"];
+            return words[Math.floor(Math.random() * words.length)];
+        }
+
+        function pickWithCount(options) {
+            const count = spiralCount || Math.floor(Math.random() * 5) + 3;
+            let index = 0;
+            while (options.length > 1) {
+                index = (index + count - 1) % options.length;
+                options.splice(index, 1);
+            }
+            return options[0];
+        }
+
+        function playMash() {
+            const housing = ["Mansion", "Apartment", "Shack", "House", getRandomWord()];
+            mashResult.house = pickWithCount([...housing]);
+
+            const spouse1 = document.getElementById("spouse1").value || getRandomPopSpouse();
+            const spouse2 = document.getElementById("spouse2").value || getRandomPopSpouse();
+            const spouse3 = document.getElementById("spouse3").value || getRandomPopSpouse();
+            const spouse4 = document.getElementById("spouse4").value || getRandomPopSpouse();
+            const spouses = [spouse1, spouse2, spouse3, spouse4, getRandomWord()];
+            mashResult.spouse = pickWithCount([...spouses]);
+
+            const job1 = document.getElementById("job1").value || getRandomPopJob();
+            const job2 = document.getElementById("job2").value || getRandomPopJob();
+            const job3 = document.getElementById("job3").value || getRandomPopJob();
+            const job4 = document.getElementById("job4").value || getRandomPopJob();
+            const jobs = [job1, job2, job3, job4, getRandomWord()];
+            mashResult.job = pickWithCount([...jobs]);
+
+            const kids1 = document.getElementById("kids1").value || getRandomPopKid();
+            const kids2 = document.getElementById("kids2").value || getRandomPopKid();
+            const kids3 = document.getElementById("kids3").value || getRandomPopKid();
+            const kids4 = document.getElementById("kids4").value || getRandomPopKid();
+            const kids = [kids1, kids2, kids3, kids4, getRandomWord()];
+            mashResult.kids = pickWithCount([...kids]);
+
+            const car1 = document.getElementById("car1").value || getRandomPopCar();
+            const car2 = document.getElementById("car2").value || getRandomPopCar();
+            const car3 = document.getElementById("car3").value || getRandomPopCar();
+            const car4 = document.getElementById("car4").value || getRandomPopCar();
+            const cars = [car1, car2, car3, car4, getRandomWord()];
+            mashResult.car = pickWithCount([...cars]);
+
+            const result = `You will live in a ${mashResult.house}, marry ${mashResult.spouse}, work as a ${mashResult.job}, have ${mashResult.kids} as your kids, and drive a ${mashResult.car}. (Spiral count: ${spiralCount})`;
+            document.getElementById("result").innerHTML = result;
+            document.getElementById("daydream").innerHTML = "";
+        }
+
+        function dayDream() {
+            if (!mashResult.house) {
+                document.getElementById("daydream").innerHTML = "Please predict your future first!";
+                return;
+            }
+
+            const settings = [
+                "a post-apocalyptic wasteland", "a disco-themed moonbase", "a pirate ship in the sky",
+                "a haunted forest of singing trees", "a city made entirely of candy"
+            ];
+            const actions = [
+                "battling a rogue toaster", "hosting a dance-off with aliens", "riding a unicorn through a storm",
+                "accidentally summoning a disco-dancing kraken", "juggling flaming pineapples"
+            ];
+            const twists = [
+                "turns out it was all a dream... or was it?", "and then a meteor shower rains glitter everywhere",
+                "because your car starts whispering secrets", "while your kid stages a tiny uprising",
+                "and your job turns out to be a front for time travel"
+            ];
+            const endings = [
+                "and you all live chaotically ever after!", "until the universe hits the reset button.",
+                "and then you wake up as your own car!", "with your spouse plotting something ridiculous.",
+                "and the galaxy throws you a parade—sort of."
+            ];
+
+            const setting = settings[Math.floor(Math.random() * settings.length)];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const twist = twists[Math.floor(Math.random() * twists.length)];
+            const ending = endings[Math.floor(Math.random() * endings.length)];
+
+            const story = `
+                Picture this: you're living in your ${mashResult.house}, which now sits in ${setting}. 
+                One day, ${mashResult.spouse} bursts in, shouting about ${action}. 
+                You grab your ${mashResult.car}, which—plot twist—${twist}. 
+                Meanwhile, ${mashResult.kids} is off being the weirdest kid ever, 
+                and your gig as a ${mashResult.job} suddenly makes zero sense. 
+                In the end, ${ending}
+            `;
+            document.getElementById("daydream").innerHTML = story.trim();
+        }
+    </script>
+</body>
+</html>
